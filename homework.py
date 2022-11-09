@@ -53,7 +53,6 @@ def send_message(bot, message):
         logger.error(f'Сбой при отправке сообщения! {error}')
 
 
-
 def get_api_answer(current_timestamp):
     """Функция делает запрос к API ЯндексПрактикума."""
     try:
@@ -68,7 +67,7 @@ def get_api_answer(current_timestamp):
         if response.status_code == HTTPStatus.OK.value:
             logging.info(f'Ответ от API:{response.json()}')
             return response.json()
-        else: 
+        else:
             logger.error('Сбой при запросе к эндпоинту!')
             raise UnavailableApi('Сбой при запросе к API.')
     except Exception as error:
@@ -77,27 +76,28 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """Функция проверяет корректность запроса к API"""
+    """Функция проверяет корректность запроса к API."""
     if isinstance(response, dict) and isinstance(response['homeworks'], list):
         logger.info('Формат соответсвует ожидаемому.')
         return response['homeworks']
-    logger.error(f'Формат не соответсвует ожидаемому!')
+    logger.error('Формат не соответсвует ожидаемому!')
     raise WrongAnswerFormat
 
 
 def parse_status(homework):
-    """Функция для парсинга ДЗ"""
+    """Функция для парсинга ДЗ."""
     try:
         homework_name = homework['homework_name']
-        homework_status = homework['status']  
+        homework_status = homework['status']
         verdict = HOMEWORK_STATUSES[homework_status]
         return f'Изменился статус проверки работы "{homework_name}". {verdict}'
     except KeyError as error:
         logger.error(f'Неожиданный статус работы!{error}')
         raise UnknownHomeworkStatus
-        
+
 
 def check_tokens():
+    """Функция проверки переменных окружения."""
     return all([
         PRACTICUM_TOKEN,
         TELEGRAM_TOKEN,
@@ -131,7 +131,7 @@ def main():
         except Exception as error:
             message = f'Сбой в работе программы: {error}.'
             if (not isinstance(error, EnvVariablesNotAvailable)
-            and not isinstance(error, telegram.error.TelegramError)):
+                and not isinstance(error, telegram.error.TelegramError)):
                 if isinstance(error, UnavailableApi):
                     if api_error_count == 0:
                         send_message(bot, message)
