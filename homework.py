@@ -49,15 +49,13 @@ def send_message(bot, message):
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logging.info('Сообщение в телеграмм отправлено!')
-    except telegram.error.TelegramError as error: 
+    except telegram.error.TelegramError as error:
         logger.error(f'Сбой при отправке сообщения! {error}')
-
-    
 
 
 
 def get_api_answer(current_timestamp):
-    """Функция делает запрос к API ЯндексПрактикума"""
+    """Функция делает запрос к API ЯндексПрактикума."""
     try:
         timestamp = current_timestamp or int(time.time())
         params = {'from_date': timestamp}
@@ -76,7 +74,6 @@ def get_api_answer(current_timestamp):
     except Exception as error:
         logger.error('Сбой при запросе к эндпоинту!')
         raise UnavailableApi(f'Сбой при запросе к API!{error}')
-
 
 
 def check_response(response):
@@ -100,7 +97,6 @@ def parse_status(homework):
         raise UnknownHomeworkStatus
         
 
-
 def check_tokens():
     return all([
         PRACTICUM_TOKEN,
@@ -117,7 +113,7 @@ def main():
     while True:
         try:
             if check_response():
-                logger.info('Все переменные окружения достпуны')
+                logger.info('Все переменные окружения достпуны.')
                 response = get_api_answer(current_timestamp)
                 homeworks = check_response(response)
                 if len(homeworks) > 0:
@@ -125,7 +121,7 @@ def main():
                         message = parse_status(homework)
                         send_message(bot, message)
                 else:
-                    logger.debug('Нет изменений в статусах работ')
+                    logger.debug('Нет изменений в статусах работ!')
                 current_timestamp = response.get(
                     'current_date', current_timestamp
                 )
@@ -133,7 +129,7 @@ def main():
                 logger.critical('Недоступны переменные окружения!')
                 sys.exit('Недоступны переменные окружения!')
         except Exception as error:
-            message = f'Сбой в работе программы: {error}'
+            message = f'Сбой в работе программы: {error}.'
             if (not isinstance(error, EnvVariablesNotAvailable)
             and not isinstance(error, telegram.error.TelegramError)):
                 if isinstance(error, UnavailableApi):
@@ -142,7 +138,7 @@ def main():
                         api_error_count += 1
         else:
             send_message(bot, message)
-        
+
         finally:
             time.sleep(RETRY_TIME)
 
