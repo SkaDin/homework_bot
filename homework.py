@@ -131,7 +131,7 @@ def main():
         except Exception as error:
             message = f'Сбой в работе программы: {error}.'
             if (not isinstance(error, EnvVariablesNotAvailable)
-                and not isinstance(error, telegram.error.TelegramError)):
+                    and not isinstance(error, telegram.error.TelegramError)):
                 if isinstance(error, UnavailableApi):
                     if api_error_count == 0:
                         send_message(bot, message)
