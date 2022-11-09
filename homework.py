@@ -64,7 +64,7 @@ def get_api_answer(current_timestamp):
             headers=HEADERS,
             params=params
         )
-        if response.status_code == HTTPStatus.OK.value:
+        if response.status_code == HTTPStatus.OK:
             logging.info(f'Ответ от API:{response.json()}')
             return response.json()
         else:
