@@ -76,6 +76,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
+    """Функция проверки корректности ответа API Яндекс.Практикум."""
     try:
         timestamp = response['current_date']
     except KeyError:
@@ -91,7 +92,7 @@ def check_response(response):
     """Функция проверяет корректность запроса к API."""
     if isinstance(timestamp, int) and isinstance(homeworks, list):
         logger.info('Формат соответсвует ожидаемому.')
-        return response['homeworks']
+        return homeworks
     logger.error('Формат не соответсвует ожидаемому!')
     raise WrongAnswerFormat
     
