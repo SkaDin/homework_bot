@@ -95,7 +95,6 @@ def check_response(response):
         return homeworks
     logger.error('Формат не соответсвует ожидаемому!')
     raise WrongAnswerFormat
-    
 
 
 def parse_status(homework):
