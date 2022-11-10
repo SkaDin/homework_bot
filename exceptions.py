@@ -11,6 +11,9 @@ class UnknownHomeworkStatus(KeyError):
     """Исключение при неизвестном статусе ДЗ."""
     pass
 
+class ProgramMalfunction(Exception):
+    """Сбой в работе программы"""
+    pass
 
 class EnvVariablesNotAvailable(Exception):
     """Исключение при недоступных переменных окружения."""

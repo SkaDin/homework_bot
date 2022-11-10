@@ -10,7 +10,7 @@ import requests
 
 from exceptions import (
     EnvVariablesNotAvailable, UnavailableApi, UnknownHomeworkStatus,
-    WrongAnswerFormat
+    WrongAnswerFormat, ProgramMalfunction
 )
 
 from dotenv import load_dotenv
@@ -70,18 +70,31 @@ def get_api_answer(current_timestamp):
         else:
             logger.error('Сбой при запросе к эндпоинту!')
             raise UnavailableApi('Сбой при запросе к API.')
-    except Exception as error:
+    except UnavailableApi as error:
         logger.error('Сбой при запросе к эндпоинту!')
         raise UnavailableApi(f'Сбой при запросе к API!{error}')
 
 
 def check_response(response):
+    try:
+        timestamp = response['current_date']
+    except KeyError:
+        logging.error(
+            'Ключ current_date в ответе API Яндекс.Практикум отсутствует'
+        )
+    try:
+        homeworks = response['homeworks']
+    except KeyError:
+        logging.error(
+            'Ключ homeworks в ответе API Яндекс.Практикум отсутствует'
+        )
     """Функция проверяет корректность запроса к API."""
-    if isinstance(response, dict) and isinstance(response['homeworks'], list):
+    if isinstance(timestamp, int) and isinstance(homeworks, list):
         logger.info('Формат соответсвует ожидаемому.')
         return response['homeworks']
     logger.error('Формат не соответсвует ожидаемому!')
     raise WrongAnswerFormat
+    
 
 
 def parse_status(homework):
@@ -107,28 +120,28 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-    bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time())
-    api_error_count = 0
+    if check_tokens():
+        logger.info('Все переменные окружения доступны')
+        bot = telegram.Bot(token=TELEGRAM_TOKEN)
+        current_timestamp = int(time.time())
+        api_error_count = 0
+    else:
+        logger.critical('Недоступны переменные окружения!')
+        sys.exit('Недоступны переменные окружения!')
     while True:
         try:
-            if check_response():
-                logger.info('Все переменные окружения достпуны.')
-                response = get_api_answer(current_timestamp)
-                homeworks = check_response(response)
-                if len(homeworks) > 0:
-                    for homework in homeworks:
-                        message = parse_status(homework)
-                        send_message(bot, message)
-                else:
-                    logger.debug('Нет изменений в статусах работ!')
-                current_timestamp = response.get(
-                    'current_date', current_timestamp
-                )
+            response = get_api_answer(current_timestamp)
+            homeworks = check_response(response)
+            if len(homeworks) > 0:
+                for homework in homeworks:
+                    message = parse_status(homework)
+                    send_message(bot, message)
             else:
-                logger.critical('Недоступны переменные окружения!')
-                sys.exit('Недоступны переменные окружения!')
-        except Exception as error:
+                logger.debug('Нет изменений в статусах работ!')
+            current_timestamp = response.get(
+                'current_date', current_timestamp
+            )
+        except ProgramMalfunction as error:
             message = f'Сбой в работе программы: {error}.'
             if (not isinstance(error, EnvVariablesNotAvailable)
                     and not isinstance(error, telegram.error.TelegramError)):
